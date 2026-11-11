@@ -6,7 +6,7 @@
 
   "postCreateCommand": "python3 -m pip install --user supervisor==4.3.0 && cd client && npm ci",
 
-  "postStartCommand": "python3 -m supervisor.supervisord -n -c .devcontainer/supervisord.conf",
+  "postStartCommand": "python3 -m supervisor.supervisord -c .devcontainer/supervisord.conf",
   
   "waitFor": "postCreateCommand",
 
