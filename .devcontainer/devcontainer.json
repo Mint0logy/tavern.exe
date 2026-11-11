@@ -4,9 +4,11 @@
 
   "image": "mcr.microsoft.com/devcontainers/universal:2",
 
-  "postCreateCommand": "cd client && npm ci",
+  "postCreateCommand": "python3 -m pip install --user supervisor==4.3.0 && cd client && npm ci",
 
-  "postStartCommand": "bash .devcontainer/start-services.sh",
+  "postStartCommand": "python3 -m supervisor.supervisord -n -c .devcontainer/supervisord.conf",
+  
+  "waitFor": "postCreateCommand",
 
   "forwardPorts": [5173, 3000],
 
