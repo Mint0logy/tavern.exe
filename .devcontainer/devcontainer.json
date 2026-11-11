@@ -1,0 +1,36 @@
+
+{
+  "name": "Tavern.exe Development",
+
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y build-essential cmake && cd client && npm ci",
+
+  "postStartCommand": "bash .devcontainer/start-services.sh",
+
+  "forwardPorts": [5173, 3000],
+
+  "portsAttributes": {
+    "5173": {
+      "label": "Tavern.exe Frontend",
+      "onAutoForward": "openBrowser",
+      "visibility": "private"
+    },
+    "3000": {
+      "label": "Tavern.exe API",
+      "onAutoForward": "silent",
+      "visibility": "private"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}
