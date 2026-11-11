@@ -4,7 +4,7 @@
 
   "image": "mcr.microsoft.com/devcontainers/universal:2",
 
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y build-essential cmake && cd client && npm ci",
+  "postCreateCommand": "cd client && npm ci",
 
   "postStartCommand": "bash .devcontainer/start-services.sh",
 
