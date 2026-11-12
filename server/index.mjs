@@ -1,4 +1,5 @@
 import { createServer } from "node:http"
+import { spawn } from "node:child_process"
 
 function sendError(res, statusCode, message) {
             res.statusCode = statusCode
@@ -27,10 +28,29 @@ function hasValidMessage(body){
         body.message.trim().length > 0)
 }
 
+function runTavernBrain(message){
+    return new Promise((resolve, reject) => {
+        const brain = spawn("./cpp/build/tavern_brain", [], { stdio: ["pipe", "pipe", "inherit"]})
+
+
+    const chunks = []
+    brain.stdout.on("data", (chunk) => chunks.push(chunk))
+    brain.on("error", reject)
+    brain.on("close", (code) => {
+        if (code !== 0 ){
+            reject(new Error(`Brain stopped with code ${code}`))
+            return
+        }
+        resolve(Buffer.concat(chunks).toString("utf8"))
+    })
+    brain.stdin.end(`${message}\n`)
+    })
+}
+
 function handleChatRequest(req, res) {  
     const chunks = []
     req.on("data", (chunk) => { chunks.push(chunk) })
-    req.on("end", () => {
+    req.on("end", async () => {
         let body
         try {
             body = JSON.parse(Buffer.concat(chunks).toString())
@@ -44,9 +64,15 @@ function handleChatRequest(req, res) {
             return
         }
         
-        res.statusCode = 200
-        res.setHeader("Content-Type", "text/plain; charset=utf-8")
-        res.end(`Received: ${body.message}`)
+        try {
+            const response = await runTavernBrain(body.message)
+            res.statusCode = 200
+            res.setHeader("Content-Type", "text/plain; charset=utf-8")
+            res.end(response)
+        }catch (error) {
+            console.error("C++ Tavern Brain cannot handle message", error)
+            sendError(res, 500, "Brain unavailable")
+        }
     })
 }
 
