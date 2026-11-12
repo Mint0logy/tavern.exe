@@ -3,7 +3,7 @@
 
   "image": "mcr.microsoft.com/devcontainers/universal:2",
 
-  "postCreateCommand": "python3 -m pip install --user supervisor==4.3.0 && cd client && npm ci",
+  "postCreateCommand": "python3 -m pip install --user supervisor==4.3.0 && npm ci --prefix apps/web && npm ci --prefix apps/api && cmake -S packages/brain -B packages/brain/build && cmake --build packages/brain/build",
 
   "postStartCommand": "python3 -m supervisor.supervisord -c .devcontainer/supervisord.conf",
   
