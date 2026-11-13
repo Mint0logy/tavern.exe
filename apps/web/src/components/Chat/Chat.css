@@ -1,0 +1,15 @@
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  flex: 1;
+  min-height: 0;
+
+  padding: 20px;
+  overflow-y: auto;
+
+  background-color: #2a211b;
+  border: 1px solid #4a3222;
+  border-radius: 14px;
+}
