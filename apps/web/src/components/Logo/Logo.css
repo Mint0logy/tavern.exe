@@ -1,0 +1,19 @@
+.logo {
+  min-height: 104px;
+  padding: 20px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  color: var(--color-text);
+  font-size: clamp(1.75rem, 6vw, 3rem);
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .logo { min-height: 80px; }
+}

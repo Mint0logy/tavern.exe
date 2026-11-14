@@ -1,17 +1,17 @@
 import type { Message } from '../../App'
-import MessageBubble from '../MessegeBubble/MessageBubble'
-import "./Chat.css"
+import MessageBubble from '../MessageBubble/MessageBubble'
+import './Chat.css'
 
-type ChatProps = {
-    messages: Message[],
-}
-
-const Chat = ({ messages }: ChatProps) => {
-    return (<section>
-        <div className="ChatWindow" role="log" aria-label="Chat history">
-            {messages.map(message => (MessageBubble(message)))}
-        </div>
-    </section>)
+const Chat = (props: { messages: Message[] }) => {
+  return (
+    <section className="chat_section" aria-label="Chat">
+      <div className="chat_window" role="log" aria-label="Chat history">
+        {props.messages.map(message => (
+          <MessageBubble key={message.id} message={message} />
+        ))}
+      </div>
+    </section>
+  )
 }
 
 export default Chat

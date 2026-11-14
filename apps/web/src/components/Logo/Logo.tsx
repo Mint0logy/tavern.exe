@@ -1,6 +1,7 @@
-import "./Logo.css"
+import './Logo.css'
 
 const Logo = () => {
- return <section>TAVERN.EXE</section>
+  return <header className="logo">TAVERN.EXE</header>
 }
+
 export default Logo
