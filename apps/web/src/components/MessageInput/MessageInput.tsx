@@ -2,7 +2,10 @@ import { useState } from 'react'
 import type { SubmitEvent } from 'react'
 import './MessageInput.css'
 
-const MessageInput = (props: { onSendMessage: (message: string) => void }) => {
+const MessageInput = (props: {
+  onSendMessage: (message: string) => void | Promise<void>
+  disabled?: boolean
+}) => {
   const [input, setInput] = useState('')
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
@@ -20,11 +23,12 @@ const MessageInput = (props: { onSendMessage: (message: string) => void }) => {
         <input
           type="text"
           value={input}
+          disabled={props.disabled}
           onChange={event => setInput(event.target.value)}
           placeholder="Napisz wiadomość..."
           aria-label="Wiadomość do karczmarza"
         />
-        <button type="submit" disabled={!input.trim()}>Wyślij</button>
+        <button type="submit" disabled={props.disabled || !input.trim()}>Wyślij</button>
       </form>
     </section>
   )
