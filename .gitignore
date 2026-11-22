@@ -32,3 +32,4 @@ models/*.bin
 *.sln
 *.sw?
 .logs/
+SESSION_NOTES.txt
