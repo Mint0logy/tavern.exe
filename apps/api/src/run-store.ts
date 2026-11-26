@@ -30,7 +30,13 @@ export class RunStore {
                     experience: 0,
                 },
             ],
-            messages: [],
+            messages: [
+                {
+                    id: randomUUID(),
+                    content: 'Witaj w karczmie, wędrowcze!',
+                    speakerId: 'innkeeper',
+                },
+            ],
             sceneMode: 'dialogue',
         }
 

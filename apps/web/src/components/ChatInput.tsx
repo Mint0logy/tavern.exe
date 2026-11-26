@@ -3,17 +3,20 @@ import styled from 'styled-components'
 import type { SubmitEvent } from 'react'
 
 type ChatInputProps = {
-    onSendMessage: (message: string) => void
+    onSendMessage: (message: string) => void | Promise<void>
+    disabled?: boolean
 }
 
-const ChatInput = ({ onSendMessage }: ChatInputProps) => {
+const ChatInput = ({ onSendMessage, disabled = false }: ChatInputProps) => {
     const [inputFieldContent, setInputFiledContent] = useState('')
 
     const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
 
         const message = inputFieldContent.trim()
-        if (message) onSendMessage(message)
+        if (!message || disabled) return
+
+        onSendMessage(message)
         setInputFiledContent('')
     }
 
@@ -21,13 +24,14 @@ const ChatInput = ({ onSendMessage }: ChatInputProps) => {
         <InputForm onSubmit={handleSubmit}>
             <MessageField
                 value={inputFieldContent}
+                disabled={disabled}
                 onChange={event => setInputFiledContent(event.target.value)}
                 placeholder='Napisz swoją wiadomość'
                 aria-label='Wiadomość do NPC'
             />
             <SendButton
                 type='submit'
-                disabled={!inputFieldContent.trim()}
+                disabled={disabled || !inputFieldContent.trim()}
             >
                 Wyślij
             </SendButton>

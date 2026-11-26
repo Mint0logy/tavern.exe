@@ -111,6 +111,36 @@ const server = createServer(async (req, res) => {
             return
         }
 
+        const npc = run.participants.find(participant => participant.id === 'innkeeper')
+        if (!npc) {
+            res.statusCode = 500
+            res.end('Active NPC not found')
+            return
+        }
+
+        let npcAnswer: string
+        try {
+            npcAnswer = await runTavernBrain(npc.id, body.message.trim())
+        } catch (error) {
+            console.error('C++ Tavern Brain cannot handle message', error)
+            res.statusCode = 500
+            res.end('Brain unavailable')
+            return
+        }
+
+        const npcMessage: ChatMessage = {
+            id: randomUUID(),
+            content: npcAnswer,
+            speakerId: npc.id,
+        }
+
+        const npcMessageAdded = runStore.addMessage(run.id, npcMessage)
+        if (!npcMessageAdded) {
+            res.statusCode = 500
+            res.end('Could not save NPC message')
+            return
+        }
+
         res.setHeader('Content-Type', 'application/json; charset=utf-8')
         res.end(JSON.stringify({ run }))
         return

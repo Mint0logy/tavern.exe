@@ -1,65 +1,69 @@
 import styled from 'styled-components'
 import { useState } from 'react'
-import type { ChatMessage, Character} from '@tavern/shared'
+import type { Run } from '@tavern/shared'
+import { sendDialogue, startRun } from './api'
 import Logo from './components/Logo'
 import CharacterSheet from './components/CharacterSheet'
 import ChatWindow from './components/ChatWindow'
 import ChatInput from './components/ChatInput'
 
+const App = () => {
+  const [run, setRun] = useState<Run | null>(null)
+  const [isStarting, setIsStarting] = useState(false)
+  const [isSending, setIsSending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
+  const handleStartRun = async () => {
+    setError(null)
+    setIsStarting(true)
 
-const App = () =>{
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: crypto.randomUUID(),
-      content: 'Witaj w karczmie, wędrowcze!',
-      speakerId: "Innkeeper"
+    try {
+      setRun(await startRun())
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Nie udało się rozpocząć gry')
+    } finally {
+      setIsStarting(false)
     }
-  ])
-  
-  const handleSendMessage = (content: string) => {
-    const playerMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      content,
-      speakerId: 'player',
-    }
-
-    setMessages(previousMessages => [...previousMessages, playerMessage])
   }
 
+  const handleSendMessage = async (content: string) => {
+    if (!run) return
 
-  //TEST - Remove later:
+    setError(null)
+    setIsSending(true)
 
-  const participants: Character[] = [
-    {
-        id: 'player',
-        kind: 'player',
-        displayName: 'Ty',
-        hp: 20,
-        maxHp: 20,
-        level: 1,
-        experience: 0,
-    },
-    {
-        id: 'innkeeper',
-        kind: 'npc',
-        displayName: 'Karczmarz',
-        hp: 40,
-        maxHp: 40,
-        level: 1,
-        experience: 0,
-    },
-]
+    try {
+      setRun(await sendDialogue(run.id, content))
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Nie udało się wysłać wiadomości')
+    } finally {
+      setIsSending(false)
+    }
+  }
 
   return (
     <AppLayout>
-      <Logo/>
-      <CharacterSheet/>
-      <ChatWindow messages={messages} participants={participants}/>
-      <ChatInput onSendMessage={handleSendMessage}/>
+      <Logo />
+      <CharacterSheet />
+      {run ? (
+        <>
+          <ChatWindow messages={run.messages} participants={run.participants} />
+          <ChatInput onSendMessage={handleSendMessage} disabled={isSending} />
+        </>
+      ) : (
+        <StartButton
+          type='button'
+          onClick={handleStartRun}
+          disabled={isStarting}
+        >
+          {isStarting ? 'Przygotowuję rozgrywkę...' : 'Wyrusz w drogę...'}
+        </StartButton>
+      )}
+      {error && <ErrorMessage role='alert'>{error}</ErrorMessage>}
     </AppLayout>
   )
 }
+
 export default App
 
 const AppLayout = styled.main`
@@ -74,4 +78,25 @@ const AppLayout = styled.main`
     @media (max-width: 700px) {
         width: calc(100% - 1.5rem);
     }
+`
+
+const StartButton = styled.button`
+    align-self: center;
+    padding: 0.75rem 1.25rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background-color: var(--color-accent);
+    color: var(--color-button-text);
+    font-weight: 600;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: wait;
+    }
+`
+
+const ErrorMessage = styled.p`
+    margin: 0;
+    color: var(--color-text);
 `
