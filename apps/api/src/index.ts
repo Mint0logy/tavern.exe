@@ -7,8 +7,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 
-type DialogueRequest = {
-    runId: string
+type PlayerMessageRequest = {
     message: string
 }
 
@@ -37,14 +36,11 @@ const runTavernBrain = (npcId: string, message: string): Promise<string> => {
 
 const runStore = new RunStore()
 
-const isDialogueRequest = (body: unknown): body is DialogueRequest => {
+const isPlayerMessageRequest = (body: unknown): body is PlayerMessageRequest => {
     return (
         body !== null &&
         typeof body === 'object' &&
         !Array.isArray(body) &&
-        'runId' in body &&
-        typeof body.runId === 'string' &&
-        body.runId.trim().length > 0 &&
         'message' in body &&
         typeof body.message === 'string' &&
         body.message.trim().length > 0
@@ -74,7 +70,9 @@ const server = createServer(async (req, res) => {
         res.end(JSON.stringify({ run }))
         return
     }
-    if (req.method === 'POST' && req.url === '/api/dialogue') {
+    const messageRoute = req.url?.match(/^\/api\/runs\/([^/]+)\/messages$/)
+    if (req.method === 'POST' && messageRoute) {
+        const runId = messageRoute[1]
         let body: unknown
 
         try {
@@ -85,13 +83,13 @@ const server = createServer(async (req, res) => {
             return
         }
 
-        if (!isDialogueRequest(body)) {
+        if (!isPlayerMessageRequest(body)) {
             res.statusCode = 400
-            res.end('Invalid dialogue request')
+            res.end('Invalid message request')
             return
         }
 
-        const run = runStore.getRun(body.runId)
+        const run = runStore.getRun(runId)
         if (!run) {
             res.statusCode = 404
             res.end('Run not found')

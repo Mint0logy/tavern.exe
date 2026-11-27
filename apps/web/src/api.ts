@@ -11,14 +11,14 @@ export const startRun = async (): Promise<Run> => {
     return body.run
 }
 
-export const sendDialogue = async (
+export const sendMessage = async (
     runId: string,
     message: string,
 ): Promise<Run> => {
-    const response = await fetch('/api/dialogue', {
+    const response = await fetch(`/api/runs/${encodeURIComponent(runId)}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ runId, message }),
+        body: JSON.stringify({ message }),
     })
 
     if (!response.ok) {

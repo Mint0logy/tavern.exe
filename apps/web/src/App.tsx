@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import { useState } from 'react'
 import type { Run } from '@tavern/shared'
-import { sendDialogue, startRun } from './api'
+import { sendMessage, startRun } from './api'
 import Logo from './components/Logo'
 import CharacterSheet from './components/CharacterSheet'
 import ChatWindow from './components/ChatWindow'
@@ -33,7 +33,7 @@ const App = () => {
     setIsSending(true)
 
     try {
-      setRun(await sendDialogue(run.id, content))
+      setRun(await sendMessage(run.id, content))
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Nie udało się wysłać wiadomości')
     } finally {
