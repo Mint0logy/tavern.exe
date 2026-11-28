@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import type { ChatMessage } from '@tavern/shared'
 import { RunStore } from './run-store.js'
 import { runTavernBrain } from './brain-client.js'
+import { savePlayerMessage, respondAsNpc, handlePlayerMessage } from './message-service.js'
 
 type PlayerMessageRequest = {
     message: string
@@ -63,56 +64,23 @@ const server = createServer(async (req, res) => {
             return
         }
 
-        const run = runStore.getRun(runId)
-        if (!run) {
-            res.statusCode = 404
-            res.end('Run not found')
+        const result = await handlePlayerMessage(runStore, runId, body.message)
+        if (!result.ok){
+            if (result.reason === 'run-not-found'){
+                res.statusCode = 404
+                res.end('Run not found')
+            }
+            else {
+                res.statusCode = 500
+
+                if (result.reason === 'player-save-failed') res.end('Could not save player msg')
+                if (result.reason === 'npc-not-found') res.end('There is no NPC with that name')
+                if (result.reason === 'npc-save-failed') res.end('Could not save NPC msg' )
+            }
             return
         }
 
-        const playerMessage: ChatMessage = {
-            id: randomUUID(),
-            content: body.message.trim(),
-            speakerId: run.player.id,
-        }
-
-        const added = runStore.addMessage(run.id, playerMessage)
-        if (!added) {
-            res.statusCode = 500
-            res.end('Could not save player message')
-            return
-        }
-
-        const npc = run.participants.find(participant => participant.id === 'innkeeper')
-        if (!npc) {
-            res.statusCode = 500
-            res.end('Active NPC not foundz')
-            return
-        }
-
-        let npcAnswer: string
-        try {
-            npcAnswer = await runTavernBrain(npc.id, body.message.trim())
-        } catch (error) {
-            console.error('C++ Tavern Brain cannot handle message', error)
-            res.statusCode = 500
-            res.end('Brain unavailable')
-            return
-        }
-
-        const npcMessage: ChatMessage = {
-            id: randomUUID(),
-            content: npcAnswer,
-            speakerId: npc.id,
-        }
-
-        const npcMessageAdded = runStore.addMessage(run.id, npcMessage)
-        if (!npcMessageAdded) {
-            res.statusCode = 500
-            res.end('Could not save NPC message')
-            return
-        }
-
+        const run = result.run
         res.setHeader('Content-Type', 'application/json; charset=utf-8')
         res.end(JSON.stringify({ run }))
         return
